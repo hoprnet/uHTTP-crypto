@@ -6,7 +6,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+        "test": "jest --coverage"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^1.5.4",
