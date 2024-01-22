@@ -1,0 +1,16 @@
+{
+  "name": "pHTTP-crypto",
+  "version": "1.0.0",
+  "description": "privateHTTP crypto protocol",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^0.4.1",
+    "@noble/curves": "^1.3.0",
+    "@noble/hashes": "^1.3.3"
+  }
+}
