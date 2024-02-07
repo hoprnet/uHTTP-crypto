@@ -1,5 +1,5 @@
 {
-  description = "p(rivate)HTTP dev shell";
+  description = "p(rivate)HTTP crypto dev shell";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
