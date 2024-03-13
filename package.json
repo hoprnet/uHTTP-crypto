@@ -2,7 +2,18 @@
     "name": "pHTTP-crypto",
     "version": "1.0.0",
     "description": "privateHTTP crypto protocol",
-    "main": "src/index.ts",
+    "main": "./build/index.js",
+    "types": "./build/index.d.ts",
+    "files": [
+        "build"
+    ],
+    "keywords": [
+        "hopr",
+        "pHTTP"
+    ],
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "license": "MIT",
     "private": false,
     "scripts": {
@@ -16,6 +27,7 @@
     "devDependencies": {
         "@stylistic/eslint-plugin": "^1.5.4",
         "@types/jest": "^29.5.11",
+        "@types/node": "18",
         "@typescript-eslint/eslint-plugin": "^6.19.0",
         "@typescript-eslint/parser": "^6.19.0",
         "eslint": "^8.56.0",

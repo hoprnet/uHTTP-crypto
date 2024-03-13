@@ -19,7 +19,7 @@ function toHex(bytes: Uint8Array | undefined) {
     return Buffer.from(bytes).toString('hex');
 }
 
-describe('RPCh Crypto protocol tests', function () {
+describe('crypto', function () {
     it('test request flow', async function () {
         // Client side
         const request_msg = new Uint8Array(crypto.randomBytes(300));
