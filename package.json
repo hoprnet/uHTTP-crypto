@@ -1,5 +1,5 @@
 {
-    "name": "pHTTP-crypto",
+    "name": "@hoprnet/phttp-crypto",
     "version": "1.0.0",
     "description": "privateHTTP crypto protocol",
     "main": "./build/index.js",
