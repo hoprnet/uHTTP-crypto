@@ -2,6 +2,7 @@
     "name": "@hoprnet/phttp-crypto",
     "version": "1.0.0",
     "description": "privateHTTP crypto protocol",
+    "author": "HOPR Association",
     "main": "./build/index.js",
     "types": "./build/index.d.ts",
     "files": [
@@ -14,8 +15,7 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "license": "MIT",
-    "private": false,
+    "license": "GPL-3.0",
     "scripts": {
         "build": "tsc",
         "format": "prettier --write src/ .github/ .eslintrc.js .prettierrc.js jest.config.ts package.json tsconfig.json",
@@ -42,5 +42,8 @@
         "@noble/ciphers": "^0.4.1",
         "@noble/curves": "^1.3.0",
         "@noble/hashes": "^1.3.3"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }
