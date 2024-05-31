@@ -7,7 +7,7 @@ Provides encryption and decryption functionality for uHTTP.
 ### Staging
 
 -   staging can be deployed from main
--   run `yarn changeset version` to create current changelog
+-   run `yarn changeset version` to create the current changelog
 -   commit everything, create a matching tag and push to main
 -   run publish action with `beta`(default) tag
 
