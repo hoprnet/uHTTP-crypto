@@ -1,7 +1,7 @@
 {
-    "name": "@hoprnet/phttp-crypto",
+    "name": "@hoprnet/uhttp-crypto",
     "version": "1.0.0",
-    "description": "privateHTTP crypto protocol",
+    "description": "u(nlinked)HTTP crypto protocol",
     "author": "HOPR Association",
     "main": "./build/index.js",
     "types": "./build/index.d.ts",
@@ -10,7 +10,7 @@
     ],
     "keywords": [
         "hopr",
-        "pHTTP"
+        "uHTTP"
     ],
     "engines": {
         "node": ">=18.0.0"
@@ -25,6 +25,7 @@
         "test": "jest --coverage"
     },
     "devDependencies": {
+        "@changesets/cli": "^2.27.5",
         "@stylistic/eslint-plugin": "^1.5.4",
         "@types/jest": "^29.5.11",
         "@types/node": "^20.11.27",
