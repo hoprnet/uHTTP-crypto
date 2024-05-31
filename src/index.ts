@@ -22,8 +22,8 @@ export type ResFailed = { res: ResState.Failed; error: string };
 
 export type Result = ResOk | ResFailed;
 
-/// pHTTP Crypto protocol version
-export const pHTTP_CRYPTO_VERSION = 0x21;
+/// uHTTP Crypto protocol version
+export const uHTTP_CRYPTO_VERSION = 0x21;
 
 /// Encoded public key size |W|
 const PUBLIC_KEY_SIZE_ENCODED = 33;
@@ -86,7 +86,7 @@ function initializeCipher(
     // Construct salt for the HKDF
     const textEnc = new TextEncoder();
     const salt = new Uint8Array(1 + peerId.length + saltTag.length);
-    salt[0] = pHTTP_CRYPTO_VERSION;
+    salt[0] = uHTTP_CRYPTO_VERSION;
     salt.set(textEnc.encode(peerId), 1);
     salt.set(textEnc.encode(saltTag), peerId.length + 1);
 
@@ -125,9 +125,9 @@ function generateEphemeralKey(randomFn: (len: number) => Uint8Array) {
     return { pubKey, privKey };
 }
 
-/// Called by the pHTTP client
-/// Takes enveloped request data, the public key of the pHTTP Exit Node and Request counter for such
-/// pHTTP Exit node and then encrypts and authenticates the data.
+/// Called by the uHTTP client
+/// Takes enveloped request data, the public key of the uHTTP Exit Node and Request counter for such
+/// uHTTP Exit node and then encrypts and authenticates the data.
 /// The encrypted data and new counter value to be persisted is returned in the resulting session.
 export function boxRequest(
     {
@@ -178,7 +178,7 @@ export function boxRequest(
     }
 
     const counterBuf = bigintToUint8BE(newCounter);
-    const versionBuf = new Uint8Array([pHTTP_CRYPTO_VERSION]);
+    const versionBuf = new Uint8Array([uHTTP_CRYPTO_VERSION]);
 
     // V,W,C,R,T
     const result = new Uint8Array(
@@ -199,9 +199,9 @@ export function boxRequest(
     };
 }
 
-/// Called by the pHTTP Exit Node
-/// Takes enveloped encrypted data, the private key of the pHTTP Exit Node and Request counter for
-/// pHTTP Client node associated with the request and then decrypts and verifies the data.
+/// Called by the uHTTP Exit Node
+/// Takes enveloped encrypted data, the private key of the uHTTP Exit Node and Request counter for
+/// uHTTP Client node associated with the request and then decrypts and verifies the data.
 /// The decrypted data and new counter value to be persisted is returned in the resulting session.
 /// Returns error and session if count verifcation failed so a response with the error message can still be boxed.
 export function unboxRequest({
@@ -215,7 +215,7 @@ export function unboxRequest({
     exitPeerId: string;
     exitPrivateKey: Uint8Array;
 }): Result {
-    if ((message[0] & 0x10) != (pHTTP_CRYPTO_VERSION & 0x10)) {
+    if ((message[0] & 0x10) != (uHTTP_CRYPTO_VERSION & 0x10)) {
         return {
             res: ResState.Failed,
             error: 'unsupported protocol version',
@@ -285,9 +285,9 @@ export function unboxRequest({
     };
 }
 
-/// Called by the pHTTP Exit Node
+/// Called by the uHTTP Exit Node
 /// Takes enveloped response data, the request session obtained by unboxRequest and Response counter for the associated
-/// pHTTP Client node and then encrypts and authenticates the data.
+/// uHTTP Client node and then encrypts and authenticates the data.
 /// The encrypted data and new counter value to be persisted is returned in the resulting session.
 export function boxResponse(
     session: Session,
@@ -338,9 +338,9 @@ export function boxResponse(
     };
 }
 
-/// Called by the pHTTP Client Node
+/// Called by the uHTTP Client Node
 /// Takes enveloped encrypted data, the associated session returned by boxRequest and Request counter for
-/// pHTTP Exit node associated with the response and then decrypts and verifies the data.
+/// uHTTP Exit node associated with the response and then decrypts and verifies the data.
 /// The decrypted data and new counter value to be persisted is returned in the resulting session.
 export function unboxResponse(
     session: Session,
