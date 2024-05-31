@@ -1,7 +1,7 @@
 {
-    "name": "@hoprnet/phttp-crypto",
+    "name": "@hoprnet/uhttp-crypto",
     "version": "1.0.0",
-    "description": "privateHTTP crypto protocol",
+    "description": "u(nlinked)HTTP crypto protocol",
     "author": "HOPR Association",
     "main": "./build/index.js",
     "types": "./build/index.d.ts",
@@ -10,7 +10,7 @@
     ],
     "keywords": [
         "hopr",
-        "pHTTP"
+        "uHTTP"
     ],
     "engines": {
         "node": ">=18.0.0"

@@ -1,5 +1,6 @@
-# pHTTP-crypto
+# u(nlinked)HTTP-crypto
 
-p(rivate)HTTP crypto library
+This is u(nlinked)HTTP crypto library.
+Provides encryption and decryption functionality for uHTTP.
 
-Provides encryption and decryption functionality for pHTTP.
+## Deployment
