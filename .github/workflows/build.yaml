@@ -53,7 +53,7 @@ jobs:
                   set -x 
                   BUILD_DATE=$(date +%Y%m%d%H%M%S)
                   PR_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
-                  npm version ${PR_VERSION}+${BUILD_DATE} --no-git-tag-version
+                  jq --arg version "${PR_VERSION}+${BUILD_DATE}" '.version = $version' package.json > temp.json && mv temp.json package.json
 
             - name: Publish to npm
               run: yarn publish --tag next
