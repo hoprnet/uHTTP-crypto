@@ -50,8 +50,10 @@ jobs:
 
             - name: Update version
               run: |
-                  NEW_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}+$(date +%Y%m%d%H%M%S)
-                  npm version ${NEW_VERSION} --no-git-tag-version
+                  set -x 
+                  BUILD_DATE=$(date +%Y%m%d%H%M%S)
+                  PR_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
+                  npm version ${PR_VERSION}+${BUILD_DATE} --no-git-tag-version
 
             - name: Publish to npm
               run: yarn publish --tag next
