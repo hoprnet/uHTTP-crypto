@@ -56,7 +56,7 @@ jobs:
                   npm view @hoprnet/uhttp-crypto versions --json > versions.json
 
                   # Find versions containing the `+` character
-                  jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}+"))' versions.json > pr_commit_versions.txt
+                  jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}-"))' versions.json > pr_commit_versions.txt
 
             - name: Unpublish PR commit versions
               env:
