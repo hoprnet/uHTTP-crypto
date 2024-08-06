@@ -26,6 +26,9 @@ jobs:
           cache-dependency-path: ./yarn.lock
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install Yarn
+        run: npm install -g yarn
+
       - name: Check version
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")

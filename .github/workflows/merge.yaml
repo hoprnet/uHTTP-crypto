@@ -29,6 +29,9 @@ jobs:
           cache-dependency-path: ./yarn.lock
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install Yarn
+        run: npm install -g yarn
+
       - name: Install dependencies
         run: yarn --frozen-lockfile
 
