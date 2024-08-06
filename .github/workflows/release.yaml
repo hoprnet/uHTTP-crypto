@@ -1,81 +1,81 @@
 name: Close release
 
 on:
-  push:
-    tags:
-      - '*'
+    push:
+        tags:
+            - '*'
 
 concurrency:
-  group: release
-  cancel-in-progress: false
+    group: release
+    cancel-in-progress: false
 
 jobs:
-  release:
-    name: Close release
-    runs-on: self-hosted-hoprnet-small
+    release:
+        name: Close release
+        runs-on: self-hosted-hoprnet-small
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
 
-      - name: Install Yarn
-        run: npm install -g yarn
+            - name: Install Yarn
+              run: npm install -g yarn
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./yarn.lock
-          registry-url: 'https://registry.npmjs.org'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'yarn'
+                  cache-dependency-path: ./yarn.lock
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Check version
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          GIT_TAG_VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
-          if [[ $PACKAGE_VERSION != $GIT_TAG_VERSION ]]; then
-            echo "Version mismatch: package.json version is $PACKAGE_VERSION, but the tag is $GIT_TAG_VERSION"
-            exit 1
-          fi
+            - name: Check version
+              run: |
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  GIT_TAG_VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
+                  if [[ $PACKAGE_VERSION != $GIT_TAG_VERSION ]]; then
+                    echo "Version mismatch: package.json version is $PACKAGE_VERSION, but the tag is $GIT_TAG_VERSION"
+                    exit 1
+                  fi
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+            - name: Install dependencies
+              run: yarn --frozen-lockfile
 
-      - name: Building
-        run: yarn build
+            - name: Building
+              run: yarn build
 
-      - name: Linting
-        run: yarn lint:ci
+            - name: Linting
+              run: yarn lint:ci
 
-      - name: Formatting
-        run: yarn format:ci
+            - name: Formatting
+              run: yarn format:ci
 
-      - name: Testing
-        run: yarn test
+            - name: Testing
+              run: yarn test
 
-      - name: Publish to npm
-        run: yarn publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Publish to npm
+              run: yarn publish --tag latest
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Retrieve package versions
-        run: |
-          # Fetch all published versions
-          npm view @hoprnet/uhttp-crypto versions --json > versions.json
-          VERSION_PREFIX=$(node -p "require('./package.json').version")-pr.
+            - name: Retrieve package versions
+              run: |
+                  # Fetch all published versions
+                  npm view @hoprnet/uhttp-crypto versions --json > versions.json
+                  VERSION_PREFIX=$(node -p "require('./package.json').version")-pr.
 
-          # Find versions containing the `+` character
-          jq -r --arg version_prefix "$VERSION_PREFIX" '.[] | select(contains("$version_prefix"))' versions.json > pr_versions.txt
-      - name: Unpublish PR versions
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          while read -r version; do
-            echo "Unpublishing version: $version"
-            npm unpublish @hoprnet/uhttp-crypto@$version --force
-          done < temp_versions.txt
+                  # Find versions containing the `+` character
+                  jq -r --arg version_prefix "$VERSION_PREFIX" '.[] | select(contains("$version_prefix"))' versions.json > pr_versions.txt
+            - name: Unpublish PR versions
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  while read -r version; do
+                    echo "Unpublishing version: $version"
+                    npm unpublish @hoprnet/uhttp-crypto@$version --force
+                  done < temp_versions.txt

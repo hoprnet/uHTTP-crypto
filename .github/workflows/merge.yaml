@@ -1,68 +1,68 @@
 name: Merge PR
 
 on:
-  pull_request:
-    types: 
-      - closed
-    branches:
-      - main
+    pull_request:
+        types:
+            - closed
+        branches:
+            - main
 
 concurrency:
-  group: merge
-  cancel-in-progress: false
+    group: merge
+    cancel-in-progress: false
 
 jobs:
-  merge:
-    name: Merge PR
-    runs-on: self-hosted-hoprnet-small
-    if: github.event.pull_request.merged == true
+    merge:
+        name: Merge PR
+        runs-on: self-hosted-hoprnet-small
+        if: github.event.pull_request.merged == true
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
 
-      - name: Install Yarn
-        run: npm install -g yarn
+            - name: Install Yarn
+              run: npm install -g yarn
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./yarn.lock
-          registry-url: 'https://registry.npmjs.org'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'yarn'
+                  cache-dependency-path: ./yarn.lock
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+            - name: Install dependencies
+              run: yarn --frozen-lockfile
 
-      - name: Update version
-        run: |
-          NEW_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
-          npm version ${NEW_VERSION} --no-git-tag-version
+            - name: Update version
+              run: |
+                  NEW_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
+                  npm version ${NEW_VERSION} --no-git-tag-version
 
-      - name: Publish to npm
-        run: yarn publish --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Publish to npm
+              run: yarn publish --tag alpha
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Retrieve package versions
-        run: |
-          # Fetch all published versions
-          npm view @hoprnet/uhttp-crypto versions --json > versions.json
+            - name: Retrieve package versions
+              run: |
+                  # Fetch all published versions
+                  npm view @hoprnet/uhttp-crypto versions --json > versions.json
 
-          # Find versions containing the `+` character
-          jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}+"))' versions.json > pr_commit_versions.txt
+                  # Find versions containing the `+` character
+                  jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}+"))' versions.json > pr_commit_versions.txt
 
-      - name: Unpublish PR commit versions
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          while read -r version; do
-            echo "Unpublishing commit version: $version"
-            npm unpublish @hoprnet/uhttp-crypto@$version --force
-          done < pr_commit_versions.txt
+            - name: Unpublish PR commit versions
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  while read -r version; do
+                    echo "Unpublishing commit version: $version"
+                    npm unpublish @hoprnet/uhttp-crypto@$version --force
+                  done < pr_commit_versions.txt
