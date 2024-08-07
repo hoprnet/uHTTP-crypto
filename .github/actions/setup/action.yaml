@@ -43,7 +43,7 @@ runs:
         - name: Set up Google Cloud SDK
           uses: google-github-actions/setup-gcloud@v2
           with:
-              project_id: ${{ secrets.GOOGLE_HOPRASSOCIATION_PROJECT }}
+              project_id: hoprassociation
               install_components: beta
 
         - name: Login Google Artifact Registry
