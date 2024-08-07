@@ -14,12 +14,11 @@ jobs:
         runs-on: self-hosted-hoprnet-small
 
         steps:
-
             - name: Setup uhttp repository
               uses: hoprnet/uhttp-crypto/.github/actions/setup@ausias/test-pipelines
               with:
-                node-version: 20
-                google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
+                  node-version: 20
+                  google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
 
             - name: Building
               run: yarn build
@@ -42,7 +41,7 @@ jobs:
                   mv temp.json package.json
                   grep version package.json
 
-            # - name: Publish to npm
-            #   run: yarn publish --tag next
-            #   env:
-            #       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Publish to npm
+              run: yarn publish --tag next
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
