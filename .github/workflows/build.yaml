@@ -16,7 +16,7 @@ jobs:
         steps:
 
             - name: Setup project
-              uses: hoprnet/uhttp-crypto/actions/setup@ausias/test-pipelines
+              uses: hoprnet/uhttp-crypto/.giithub/actions/setup@ausias/test-pipelines
               with:
                 node-version: 20
                 GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}

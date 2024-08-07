@@ -1,4 +1,4 @@
-# uhttp-crypto/.github/actions/setup/action.yaml
+# hoprnet/uhttp-crypto/.giithub/actions/setup@main
 name: 'Setup Products'
 description: 'Setup Products projects'
 inputs:
