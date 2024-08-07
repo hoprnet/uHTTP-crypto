@@ -24,43 +24,21 @@ jobs:
             - name: Building
               run: yarn build
 
-            # - name: Linting
-            #   run: yarn lint:ci
+            - name: Linting
+              run: yarn lint:ci
 
-            # - name: Formatting
-            #   run: yarn format:ci
+            - name: Formatting
+              run: yarn format:ci
 
-            # - name: Testing
-            #   run: yarn test
+            - name: Testing
+              run: yarn test
 
-            # - name: Publish next version
-            #   run: |
-            #       BUILD_DATE=$(date +%Y%m%d%H%M%S)
-            #       PR_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
-            #       jq --arg version "${PR_VERSION}-${BUILD_DATE}" '.version = $version' package.json > temp.json
-            #       mv temp.json package.json
-            #       yarn publish --tag next
-            #   env:
-            #       NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
-
-            # - name: Unpublish PR commit versions
-            #   run: |
-            #       gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq -r ' .[] | select(.name | contains("-pr.${{ github.event.pull_request.number }}-")).name' > pr_commit_versions.txt
-            #       while read -r version; do
-            #         version_number=$(sed 's/.*versions\///' <<< $version)
-            #         echo "Unpublishing commit version: $version"
-            #         gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version_number
-            #       done < pr_commit_versions.txt
-
-            - name: Publish alpha version
+            - name: Publish next version
               run: |
                   BUILD_DATE=$(date +%Y%m%d%H%M%S)
                   PR_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
                   jq --arg version "${PR_VERSION}-${BUILD_DATE}" '.version = $version' package.json > temp.json
                   mv temp.json package.json
                   yarn publish --tag next
-                  jq --arg version "${PR_VERSION}" '.version = $version' package.json > temp.json
-                  mv temp.json package.json
-                  yarn publish --tag alpha
               env:
                   NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
