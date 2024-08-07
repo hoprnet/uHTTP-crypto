@@ -34,10 +34,6 @@ runs:
               token_format: 'access_token'
               credentials_json: ${{ inputs.google-credentials }}
 
-        # - name: Login Google Artifact Registry
-        #   shell: bash
-        #   run: npm run login
-
         - name: Setup Node.js
           uses: actions/setup-node@v4
           with:
