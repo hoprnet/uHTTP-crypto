@@ -40,8 +40,9 @@ jobs:
                   jq --arg version "${PR_VERSION}-${BUILD_DATE}" '.version = $version' package.json > temp.json
                   mv temp.json package.json
                   grep version package.json
+                  cat ${GOOGLE_APPLICATION_CREDENTIALS}
 
             - name: Publish to Google Artifact registry
               run: yarn publish --tag next
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              # env:
+              #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
