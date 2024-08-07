@@ -18,51 +18,28 @@ jobs:
         if: github.event.pull_request.merged == true
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Setup uhttp repository
+              id: setup
+              uses: hoprnet/uhttp-crypto/.github/actions/setup@ausias/test-pipelines
               with:
-                  node-version: '20'
+                  node-version: 20
+                  google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
 
-            - name: Install Yarn
-              run: npm install -g yarn
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '20'
-                  cache: 'yarn'
-                  cache-dependency-path: ./yarn.lock
-                  registry-url: https://europe-west3-npm.pkg.dev/hoprassociation/npm
-
-            - name: Install dependencies
-              run: yarn --frozen-lockfile
-
-            - name: Update version
+            - name: Publish alpha version
               run: |
-                  NEW_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
-                  npm version ${NEW_VERSION} --no-git-tag-version
-
-            - name: Publish to npm
-              run: yarn publish --tag alpha
+                  PR_VERSION=$(node -p "require('./package.json').version")-pr.${{ github.event.pull_request.number }}
+                  npm version ${PR_VERSION} --no-git-tag-version
+                  yarn publish --tag alpha
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-            - name: Retrieve package versions
-              run: |
-                  # Fetch all published versions
-                  npm view @hoprnet/uhttp-crypto versions --json > versions.json
-
-                  # Find versions containing the `+` character
-                  jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}-"))' versions.json > pr_commit_versions.txt
+                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
 
             - name: Unpublish PR commit versions
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               run: |
+                  npm view @hoprnet/uhttp-crypto versions --json > versions.json
+                  jq -r '.[] | select(contains("-pr.${{ github.event.pull_request.number }}-"))' versions.json > pr_commit_versions.txt
                   while read -r version; do
                     echo "Unpublishing commit version: $version"
                     npm unpublish @hoprnet/uhttp-crypto@$version --force
                   done < pr_commit_versions.txt
+              env:
+                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
