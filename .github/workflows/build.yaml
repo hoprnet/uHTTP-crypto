@@ -42,14 +42,3 @@ jobs:
                   yarn publish --tag next
               env:
                   NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
-
-            - name: Unpublish PR commit versions
-              run: |
-                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq -r ' .[] | select(.name | contains("-pr.${{ github.event.pull_request.number }}-")).name' > pr_commit_versions.txt
-                  while read -r version; do
-                    version_number=$(sed 's/.*versions\///' <<< $version)
-                    echo "Unpublishing commit version: $version"
-                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version_number
-                  done < pr_commit_versions.txt
-              env:
-                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
