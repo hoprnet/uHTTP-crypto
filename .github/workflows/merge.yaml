@@ -35,7 +35,7 @@ jobs:
                   node-version: '20'
                   cache: 'yarn'
                   cache-dependency-path: ./yarn.lock
-                  registry-url: 'https://registry.npmjs.org'
+                  registry-url: https://europe-west3-npm.pkg.dev/hoprassociation/npm
 
             - name: Install dependencies
               run: yarn --frozen-lockfile
