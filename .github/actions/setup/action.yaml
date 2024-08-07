@@ -11,6 +11,7 @@ inputs:
 outputs:
     access_token:
         description: 'GCP Access token'
+        value: ${{ steps.auth.outputs.access_token }}
 runs:
     using: 'composite'
     steps:
@@ -50,9 +51,7 @@ runs:
 
         - name: Login Google Artifact Registry
           shell: bash
-          run: |
-              npm run login
-              echo "access_token=${{ steps.auth.outputs.access_token }}" >> $GITHUB_OUTPUT
+          run: npm run login
 
         - name: Setup Node.js
           uses: actions/setup-node@v4
