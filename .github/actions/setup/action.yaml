@@ -28,7 +28,8 @@ runs:
           id: auth
           uses: google-github-actions/auth@v2
           with:
-              token_format: 'access_token'
+              export_environment_variables: true
+              create_credentials_file: true
               credentials_json: ${{ inputs.google-credentials }}
 
         - name: Login Google Artifact Registry
