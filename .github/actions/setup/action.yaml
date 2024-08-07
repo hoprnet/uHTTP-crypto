@@ -8,7 +8,9 @@ inputs:
     google-credentials:
         description: 'Google credentials taken from secret GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY'
         required: true
-
+outputs:
+  access_token:
+    description: "GCP Access token"
 runs:
     using: 'composite'
     steps:
@@ -64,4 +66,4 @@ runs:
 
         - name: Retrieve GCP Authenticated Account Info
           shell: bash
-          run: gcloud auth list
+          run: echo "access_token=${{ steps.auth.outputs.access_token }}" >> $GITHUB_OUTPUT
