@@ -6,7 +6,7 @@ inputs:
     description: 'Node version to use'
     required: true
   google-credentials:
-    description: 'Google credentials'
+    description: 'Google credentials taken from secret GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY'
     required: true
 
 runs:
@@ -21,6 +21,7 @@ runs:
           node-version: '20'
 
     - name: Install Yarn
+      shell: bash
       run: npm install -g yarn
 
     - name: Set up Google Cloud Credentials
@@ -45,4 +46,5 @@ runs:
           registry-url: https://europe-west3-npm.pkg.dev/hoprassociation/npm
 
     - name: Install dependencies
+      shell: bash
       run: yarn --frozen-lockfile
