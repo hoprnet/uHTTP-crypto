@@ -41,7 +41,7 @@ jobs:
                   mv temp.json package.json
                   grep version package.json
 
-            - name: Publish to npm
+            - name: Publish to Google Artifact registry
               run: yarn publish --tag next
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
