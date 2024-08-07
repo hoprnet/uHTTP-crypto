@@ -1,73 +1,61 @@
 name: Close release
 
 on:
-  push:
-    tags:
-      - '*'
+    workflow_dispatch:
 
 concurrency:
-  group: release
-  cancel-in-progress: false
+    group: release
+    cancel-in-progress: false
 
 jobs:
-  release:
-    name: Close release
-    runs-on: self-hosted-hoprnet-small
+    release:
+        name: Close release
+        runs-on: self-hosted-hoprnet-small
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Setup uhttp repository
+              id: setup
+              uses: hoprnet/uhttp-crypto/.github/actions/setup@ausias/test-pipelines
+              with:
+                  node-version: 20
+                  google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./yarn.lock
-          registry-url: 'https://registry.npmjs.org'
+            - name: Check version
+              run: |
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  git fetch --all --tags
+                  if git tag -l ${PACKAGE_VERSION} | grep ${PACKAGE_VERSION};
+                  then 
+                    echo "Git tag ${PACKAGE_VERSION}; alreay exists"
+                    exit 1
+                  else
+                    git tag v${PACKAGE_VERSION}
+                    git push origin v${PACKAGE_VERSION}
+                  fi
 
-      - name: Check version
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          GIT_TAG_VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
-          if [[ $PACKAGE_VERSION != $GIT_TAG_VERSION ]]; then
-            echo "Version mismatch: package.json version is $PACKAGE_VERSION, but the tag is $GIT_TAG_VERSION"
-            exit 1
-          fi
+            - name: Building
+              run: yarn build
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+            - name: Linting
+              run: yarn lint:ci
 
-      - name: Building
-        run: yarn build
+            - name: Formatting
+              run: yarn format:ci
 
-      - name: Linting
-        run: yarn lint:ci
+            - name: Testing
+              run: yarn test
 
-      - name: Formatting
-        run: yarn format:ci
+            - name: Publish to npm
+              run: yarn publish --tag latest
+              env:
+                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
 
-      - name: Testing
-        run: yarn test
-
-      - name: Publish to npm
-        run: yarn publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Retrieve package versions
-        run: |
-          # Fetch all published versions
-          npm view @hoprnet/uhttp-crypto versions --json > versions.json
-          VERSION_PREFIX=$(node -p "require('./package.json').version")-pr.
-
-          # Find versions containing the `+` character
-          jq -r --arg version_prefix "$VERSION_PREFIX" '.[] | select(contains("$version_prefix"))' versions.json > pr_versions.txt
-      - name: Unpublish PR versions
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          while read -r version; do
-            echo "Unpublishing version: $version"
-            npm unpublish @hoprnet/uhttp-crypto@$version --force
-          done < temp_versions.txt
+            - name: Unpublish PR versions
+              run: |
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' > pr_versions.txt
+                  while read -r version; do
+                    version_number=$(sed 's/.*versions\///' <<< $version)
+                    echo "Unpublishing PR version: $version_number"
+                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version_number
+                  done < pr_versions.txt
