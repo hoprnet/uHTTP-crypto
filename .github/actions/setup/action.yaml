@@ -64,4 +64,4 @@ runs:
 
         - name: Retrieve GCP Authenticated Account Info
           shell: bash
-          run: gcloud auth list"
+          run: gcloud auth list
