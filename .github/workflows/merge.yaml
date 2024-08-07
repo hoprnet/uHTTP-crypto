@@ -20,7 +20,7 @@ jobs:
         steps:
             - name: Setup uhttp repository
               id: setup
-              uses: hoprnet/uhttp-crypto/.github/actions/setup@ausias/test-pipelines
+              uses: hoprnet/uhttp-crypto/.github/actions/setup@main
               with:
                   node-version: 20
                   google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
