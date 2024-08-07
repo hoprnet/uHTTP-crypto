@@ -1,11 +1,11 @@
-# hoprnet/uhttp-crypto/.giithub/actions/setup@main
-name: 'Setup Products'
+# hoprnet/uhttp-crypto/.github/actions/setup@main
+name: 'Setup uhttp repository'
 description: 'Setup Products projects'
 inputs:
   node-version:
     description: 'Node version to use'
     required: true
-  GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY:
+  google-credentials:
     description: 'Google credentials'
     required: true
 
@@ -21,14 +21,13 @@ runs:
           node-version: '20'
 
     - name: Install Yarn
-      shell: /bin/bash
       run: npm install -g yarn
 
     - name: Set up Google Cloud Credentials
       id: auth
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ inputs.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
+        credentials_json: ${{ inputs.google-credentials }}
 
     - name: Login Google Artifact Registry
       uses: docker/login-action@v3
@@ -46,5 +45,4 @@ runs:
           registry-url: https://europe-west3-npm.pkg.dev/hoprassociation/npm
 
     - name: Install dependencies
-      shell: /bin/bash
       run: yarn --frozen-lockfile
