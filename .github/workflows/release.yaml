@@ -46,7 +46,8 @@ jobs:
               id: changelog
               run: |
                   PACKAGE_VERSION=$(node -p "require('./package.json').version")
-                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' | sed "s/.*versions\/${PACKAGE_VERSION}-pr.//g" > pr_numbers.txt
+                  echo "current_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=${{ vars.NPM_PACKAGE_NAME }} --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' | sed "s/.*versions\/${PACKAGE_VERSION}-pr.//g" > pr_numbers.txt
                   echo "### Changelog" > changelog.md
                   echo "" >> changelog.md
                   while read -r pr_number; do
@@ -59,36 +60,34 @@ jobs:
                   echo "" >> changelog.md
                   echo "### Npm package" >> changelog.md
                   echo "" >> changelog.md
-                  echo "[Download package](https://www.npmjs.com/package/@hoprnet/uhttp-crypto/v/${PACKAGE_VERSION})" >> changelog.md
+                  echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md
                   echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
 
             - name: Create Release
               uses: softprops/action-gh-release@v2
               with:
                   body_path: changelog.md
-                  name: '@hoprnet/uhttp-crypto - v${{ steps.changelog.outputs.release_version }}'
+                  name: '${{ vars.NPM_PACKAGE_NAME }} - v${{ steps.changelog.outputs.release_version }}'
                   tag_name: v${{ steps.changelog.outputs.release_version }}
 
             - name: Unpublish PR versions
               run: |
-                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
-                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' | sed 's/.*versions\///g' > pr_versions.txt
+                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=${{ vars.NPM_PACKAGE_NAME }} --format=json 2> /dev/null | jq -r ' .[] | select(.name | contains("${{ steps.changelog.outputs.current_version }}-pr.")).name' | sed 's/.*versions\///g' > pr_versions.txt
                   while read -r version; do
                     echo "Unpublishing PR version: $version"
-                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version
+                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package ${{ vars.NPM_PACKAGE_NAME }} $version
                   done < pr_versions.txt
 
             - name: Tag version
               run: |
-                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
                   git fetch --all --tags
-                  if git tag -l ${PACKAGE_VERSION} | grep ${PACKAGE_VERSION};
+                  if git tag -l ${{ steps.changelog.outputs.current_version }} | grep ${{ steps.changelog.outputs.current_version }};
                   then
-                    echo "Git tag ${PACKAGE_VERSION}; alreay exists"
+                    echo "Git tag ${{ steps.changelog.outputs.current_version }} alreay exists"
                     exit 1
                   else
-                    git tag v${PACKAGE_VERSION}
-                    git push origin v${PACKAGE_VERSION}
+                    git tag v${{ steps.changelog.outputs.current_version }}
+                    git push origin v${{ steps.changelog.outputs.current_version }}
                   fi
 
             - name: Publish to Google Artifact Registry
@@ -119,3 +118,15 @@ jobs:
                   delete-branch: true
                   assignees: ${{ github.actor }}
                   team-reviewers: '@hoprnet/hopr-products-team'
+
+            - name: Notify new release
+              uses: zulip/github-actions-zulip/send-message@v1
+              with:
+                  api-key: ${{ secrets.ZULIP_API_KEY }}
+                  email: ${{ secrets.ZULIP_EMAIL }}
+                  organization-url: 'https://hopr.zulipchat.com'
+                  type: 'stream'
+                  to: 'Releases'
+                  topic: 'main'
+                  content: |
+                      I'm glad to inform that version **${{ vars.NPM_PACKAGE_NAME }}@${{ steps.changelog.outputs.current_version }}** has been released. See [ChangeLog](https://github.com/hoprnet/uHTTP-crypto/releases/tag/v${{ steps.changelog.outputs.current_version }})
