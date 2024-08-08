@@ -2,16 +2,16 @@ name: Close release
 
 on:
     workflow_dispatch:
-      inputs:
-        release_type:
-          description: 'Next version type'
-          required: true
-          type: choice
-          default: 'patch'
-          options:
-            - patch
-            - minor
-            - major
+        inputs:
+            release_type:
+                description: 'Next version type'
+                required: true
+                type: choice
+                default: 'patch'
+                options:
+                    - patch
+                    - minor
+                    - major
 
 concurrency:
     group: release
@@ -64,7 +64,7 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   body_path: changelog.md
-                  name: "@hoprnet/uhttp-crypto - v${{ steps.changelog.outputs.release_version }}"
+                  name: '@hoprnet/uhttp-crypto - v${{ steps.changelog.outputs.release_version }}'
                   tag_name: v${{ steps.changelog.outputs.release_version }}
 
             # - name: Unpublish PR versions
@@ -105,10 +105,10 @@ jobs:
               uses: peter-evans/create-pull-request@v6
               with:
                   token: ${{ secrets.GH_RUNNER_TOKEN }}
-                  commit-message: "Bump to version ${{ steps.bump.outputs.bump_version }}"
-                  title: "Open release ${{ steps.bump.outputs.bump_version }}"
-                  body: "The scope of this PR is to bump the new release ${{ steps.bump.outputs.bump_version }}"
+                  commit-message: 'Bump to version ${{ steps.bump.outputs.bump_version }}'
+                  title: 'Open release ${{ steps.bump.outputs.bump_version }}'
+                  body: 'The scope of this PR is to bump the new release ${{ steps.bump.outputs.bump_version }}'
                   branch: bot/open-${{ inputs.release_type }}-${{ steps.bump.outputs.bump_version }}
                   delete-branch: true
                   assignees: ${{ github.actor }}
-                  team-reviewers: "@hoprnet/hopr-products-team"
+                  team-reviewers: '@hoprnet/hopr-products-team'
