@@ -96,7 +96,7 @@ jobs:
                   registry-url: https://registry.npmjs.org
 
             - name: Publish to npm
-              run: yarn publish --no-git-tag-version --tag latest
+              run: yarn publish --registry https://registry.npmjs.org --no-git-tag-version --tag latest
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
