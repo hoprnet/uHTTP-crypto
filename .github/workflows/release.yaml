@@ -64,6 +64,8 @@ jobs:
                   echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md
                   cat changelog.md
                   echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+              env:
+                  GH_TOKEN: ${{ github.token }}
 
             - name: Create Release
               uses: softprops/action-gh-release@v2
@@ -85,8 +87,19 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
 
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'yarn'
+                  cache-dependency-path: ./yarn.lock
+                  registry-url: https://registry.npmjs.org
+
             - name: Publish to npm
-              run: yarn publish --no-git-tag-version --registry https://registry.npmjs.org --tag latest
+              run: |
+                  sed -i '/hoprassociation/d' .npmrc
+                  yarn publish --no-git-tag-version --tag latest
+                  git checkout .npmrc
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -102,6 +115,7 @@ jobs:
               with:
                   token: ${{ secrets.GH_RUNNER_TOKEN }}
                   commit-message: 'Bump to version ${{ steps.bump.outputs.bump_version }}'
+                  base: main
                   title: 'Open release ${{ steps.bump.outputs.bump_version }}'
                   body: 'The scope of this PR is to bump the new release ${{ steps.bump.outputs.bump_version }}'
                   branch: bot/open-${{ inputs.release_type }}-${{ steps.bump.outputs.bump_version }}
