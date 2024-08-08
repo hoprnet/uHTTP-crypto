@@ -61,7 +61,8 @@ jobs:
                   echo "" >> changelog.md
                   echo "### Npm package" >> changelog.md
                   echo "" >> changelog.md
-                  echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md
+                  echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md"
+                  cat changelog.md
                   echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
 
             - name: Create Release
@@ -79,25 +80,13 @@ jobs:
                     gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package ${{ vars.NPM_PACKAGE_NAME }} $version
                   done < pr_versions.txt
 
-            - name: Tag version
-              run: |
-                  git fetch --all --tags
-                  if git tag -l ${{ steps.changelog.outputs.current_version }} | grep ${{ steps.changelog.outputs.current_version }};
-                  then
-                    echo "Git tag ${{ steps.changelog.outputs.current_version }} alreay exists"
-                    exit 1
-                  else
-                    git tag v${{ steps.changelog.outputs.current_version }}
-                    git push origin v${{ steps.changelog.outputs.current_version }}
-                  fi
-
             - name: Publish to Google Artifact Registry
               run: yarn publish --tag latest
               env:
                   NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
 
             - name: Publish to npm
-              run: yarn publish --registry https://registry.npmjs.org --tag latest
+              run: yarn publish --no-git-tag-version --registry https://registry.npmjs.org --tag latest
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
