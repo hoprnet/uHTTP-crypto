@@ -1,6 +1,6 @@
 {
     "name": "@hoprnet/uhttp-crypto",
-    "version": "1.0.2-pr.6",
+    "version": "1.0.2-pr.7",
     "description": "u(nlinked)HTTP crypto protocol",
     "author": "HOPR Association",
     "main": "./build/index.js",
