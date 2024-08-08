@@ -27,11 +27,10 @@ jobs:
 
             - name: Unpublish PR commit versions
               run: |
-                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq -r ' .[] | select(.name | contains("-pr.${{ github.event.pull_request.number }}-")).name' > pr_commit_versions.txt
+                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq -r ' .[] | select(.name | contains("-pr.${{ github.event.pull_request.number }}-")).name'  | sed 's/.*versions\///g' > pr_commit_versions.txt
                   while read -r version; do
-                    version_number=$(sed 's/.*versions\///' <<< $version)
-                    echo "Unpublishing commit version: $version_number"
-                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version_number
+                    echo "Unpublishing commit version: $version"
+                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version
                   done < pr_commit_versions.txt
 
             - name: Publish alpha version

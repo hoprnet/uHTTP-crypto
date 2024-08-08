@@ -2,6 +2,16 @@ name: Close release
 
 on:
     workflow_dispatch:
+      inputs:
+        release_type:
+          description: 'Next version type'
+          required: true
+          type: choice
+          default: 'patch'
+          options:
+            - patch
+            - minor
+            - major
 
 concurrency:
     group: release
@@ -20,19 +30,6 @@ jobs:
                   node-version: 20
                   google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
 
-            - name: Check version
-              run: |
-                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
-                  git fetch --all --tags
-                  if git tag -l ${PACKAGE_VERSION} | grep ${PACKAGE_VERSION};
-                  then 
-                    echo "Git tag ${PACKAGE_VERSION}; alreay exists"
-                    exit 1
-                  else
-                    git tag v${PACKAGE_VERSION}
-                    git push origin v${PACKAGE_VERSION}
-                  fi
-
             - name: Building
               run: yarn build
 
@@ -45,17 +42,73 @@ jobs:
             - name: Testing
               run: yarn test
 
-            - name: Publish to npm
-              run: yarn publish --tag latest
-              env:
-                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
-
-            - name: Unpublish PR versions
+            - name: Generate changelog
+              id: changelog
               run: |
                   PACKAGE_VERSION=$(node -p "require('./package.json').version")
-                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' > pr_versions.txt
-                  while read -r version; do
-                    version_number=$(sed 's/.*versions\///' <<< $version)
-                    echo "Unpublishing PR version: $version_number"
-                    gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version_number
-                  done < pr_versions.txt
+                  gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' | sed "s/.*versions\/${PACKAGE_VERSION}-pr.//g" > pr_numbers.txt
+                  echo "### Changelog\n" > changelog.md
+                  while read -r pr_number; do
+                    if [[ $pr_number == *"-"* ]]; then
+                      echo "There are still open PR for this release"
+                      exit 1
+                    fi
+                    gh pr view ${pr_number} --json number,title | jq -r '"- #\(.number) - \(.title)"' >> changelog.md
+                  done < pr_numbers.txt
+                  echo "" >> changelog.md
+                  echo "### Npm package\n" >> changelog.md
+                  echo "[Download package](https://www.npmjs.com/package/@hoprnet/uhttp-crypto/v/${PACKAGE_VERSION})" >> changelog.md
+                  echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  body_path: changelog.md
+                  name: "@hoprnet/uhttp-crypto - v${{ steps.changelog.outputs.release_version }}"
+                  tag_name: v${{ steps.changelog.outputs.release_version }}
+
+            # - name: Unpublish PR versions
+            #   run: |
+            #       PACKAGE_VERSION=$(node -p "require('./package.json').version")
+            #       gcloud artifacts versions list --repository=npm --location=europe-west3 --project=hoprassociation --package=@hoprnet/uhttp-crypto --format=json 2> /dev/null | jq --arg version "${PACKAGE_VERSION}-pr." -r ' .[] | select(.name | contains($version)).name' | sed 's/.*versions\///g' > pr_versions.txt
+            #       while read -r version; do
+            #         echo "Unpublishing PR version: $version"
+            #         gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package @hoprnet/uhttp-crypto $version
+            #       done < pr_versions.txt
+
+            # - name: Tag version
+            #   run: |
+            #       PACKAGE_VERSION=$(node -p "require('./package.json').version")
+            #       git fetch --all --tags
+            #       if git tag -l ${PACKAGE_VERSION} | grep ${PACKAGE_VERSION};
+            #       then
+            #         echo "Git tag ${PACKAGE_VERSION}; alreay exists"
+            #         exit 1
+            #       else
+            #         git tag v${PACKAGE_VERSION}
+            #         git push origin v${PACKAGE_VERSION}
+            #       fi
+
+            # - name: Publish to npm
+            #   run: yarn publish --tag latest
+            #   env:
+            #       NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
+
+            - name: Bump Version
+              id: bump
+              run: |
+                  npm version ${{ inputs.release_type }} --no-git-tag-version
+                  BUMP_VERSION=$(node -p "require('./package.json').version")
+                  echo "bump_version=${BUMP_VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v6
+              with:
+                  token: ${{ secrets.GH_RUNNER_TOKEN }}
+                  commit-message: "Bump to version ${{ steps.bump.outputs.bump_version }}"
+                  title: "Open release ${{ steps.bump.outputs.bump_version }}"
+                  body: "The scope of this PR is to bump the new release ${{ steps.bump.outputs.bump_version }}"
+                  branch: bot/open-${{ inputs.release_type }}-${{ steps.bump.outputs.bump_version }}
+                  delete-branch: true
+                  assignees: ${{ github.actor }}
+                  team-reviewers: "@hoprnet/hopr-products-team"
