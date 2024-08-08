@@ -61,7 +61,7 @@ jobs:
                   echo "" >> changelog.md
                   echo "### Npm package" >> changelog.md
                   echo "" >> changelog.md
-                  echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md"
+                  echo "[Download package](https://www.npmjs.com/package/${{ vars.NPM_PACKAGE_NAME }}/v/${PACKAGE_VERSION})" >> changelog.md
                   cat changelog.md
                   echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
 
