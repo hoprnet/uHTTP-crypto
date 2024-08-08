@@ -52,10 +52,11 @@ jobs:
                   echo "" >> changelog.md
                   while read -r pr_number; do
                     if [[ $pr_number == *"-"* ]]; then
-                      echo "There are still open PR for this release"
-                      exit 1
+                      echo "Deleting obsolete artifact ${PACKAGE_VERSION}-pr.${pr_number}"
+                      gcloud artifacts versions delete --delete-tags --quiet --repository=npm --location=europe-west3 --project=hoprassociation --package ${{ vars.NPM_PACKAGE_NAME }} "${PACKAGE_VERSION}-pr.${pr_number}"
+                    else
+                      gh pr view ${pr_number} --json number,title | jq -r '"- #\(.number) - \(.title)"' >> changelog.md
                     fi
-                    gh pr view ${pr_number} --json number,title | jq -r '"- #\(.number) - \(.title)"' >> changelog.md
                   done < pr_numbers.txt
                   echo "" >> changelog.md
                   echo "### Npm package" >> changelog.md
