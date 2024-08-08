@@ -46,7 +46,6 @@
         "@noble/hashes": "^1.3.3"
     },
     "publishConfig": {
-        "access": "public",
-        "registry": "https://europe-west3-npm.pkg.dev/hoprassociation/npm"
+        "access": "public"
     }
 }
