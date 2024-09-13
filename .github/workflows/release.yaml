@@ -23,12 +23,20 @@ jobs:
         runs-on: self-hosted-hoprnet-small
 
         steps:
-            - name: Setup uhttp repository
-              id: setup
-              uses: hoprnet/uhttp-crypto/.github/actions/setup@main
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: hoprnet/hopr-workflows/actions/setup-node-js@master
               with:
                   node-version: 20
+
+            - name: Setup GCP
+              id: gcp
+              uses: hoprnet/hopr-workflows/actions/setup-gcp@master
+              with:
                   google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
+                  login-artifact-registry: 'true'
 
             - name: Building
               run: yarn build
@@ -85,7 +93,7 @@ jobs:
             - name: Publish to Google Artifact Registry
               run: yarn publish --tag latest
               env:
-                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
+                  NODE_AUTH_TOKEN: ${{ steps.gcp.outputs.access_token }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -133,4 +141,4 @@ jobs:
                   to: 'Releases'
                   topic: 'main'
                   content: |
-                      I'm glad to inform that version **${{ vars.NPM_PACKAGE_NAME }}@${{ steps.changelog.outputs.current_version }}** has been released. See [ChangeLog](https://github.com/hoprnet/uHTTP-crypto/releases/tag/v${{ steps.changelog.outputs.current_version }})
+                      I'm thrilled to inform that version **${{ vars.NPM_PACKAGE_NAME }}@${{ steps.changelog.outputs.current_version }}** has been released. See [ChangeLog](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.changelog.outputs.current_version }})
