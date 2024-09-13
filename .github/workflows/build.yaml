@@ -14,12 +14,20 @@ jobs:
         runs-on: self-hosted-hoprnet-small
 
         steps:
-            - name: Setup uhttp repository
-              id: setup
-              uses: hoprnet/uhttp-crypto/.github/actions/setup@main
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: hoprnet/hopr-workflows/actions/setup-node-js@master
               with:
                   node-version: 20
+
+            - name: Setup GCP
+              id: gcp
+              uses: hoprnet/hopr-workflows/actions/setup-gcp@master
+              with:
                   google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
+                  login-artifact-registry: 'true'
 
             - name: Building
               run: yarn build
@@ -41,4 +49,4 @@ jobs:
                   mv temp.json package.json
                   yarn publish --no-git-tag-version --tag next
               env:
-                  NODE_AUTH_TOKEN: ${{ steps.setup.outputs.access_token }}
+                  NODE_AUTH_TOKEN: ${{ steps.gcp.outputs.access_token }}
